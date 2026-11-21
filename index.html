@@ -968,15 +968,11 @@
         const res = await fetch(SCRIPT_URL + '?action=get');
         const remote = await res.json();
         if (Array.isArray(remote)) {
-          remote.forEach(r => {
-            const i = members.findIndex(m => m.email === r.email);
-            if (i >= 0) {
-              // Prefer the remote headshot URL if it exists, else keep local
-              const existingHeadshot = members[i].headshot || '';
-              members[i] = { ...r, headshot: r.headshot || existingHeadshot };
-            } else {
-              members.push(r);
-            }
+          // The Sheet is the source of truth: anyone removed from it disappears here too.
+          members = remote.map(r => {
+            const local = members.find(m => m.email === r.email);
+            // Prefer the remote headshot URL if it exists, else keep local
+            return { ...r, headshot: r.headshot || (local && local.headshot) || '' };
           });
           localStorage.setItem('gssa_members', JSON.stringify(members));
         }
