@@ -543,9 +543,10 @@
     display: block;
     margin: -28px -28px 18px -28px;
     width: calc(100% + 56px);
-    height: 175px;
+    height: auto;
+    aspect-ratio: 1 / 1;
     object-fit: cover;
-    object-position: top;
+    object-position: center;
   }
   .card-initials {
     width: 50px; height: 50px;
@@ -981,6 +982,12 @@
     renderDirectory();
   }
 
+  // Ask Cloudinary for a square crop centred on the face, so landscape and portrait shots frame the same way.
+  function faceCrop(url) {
+    if (!url || url.indexOf('res.cloudinary.com') === -1 || url.indexOf('/upload/') === -1) return url;
+    return url.replace('/upload/', '/upload/c_fill,g_face,ar_1:1,w_600,q_auto,f_auto/');
+  }
+
   function renderDirectory() {
     const grid = document.getElementById('directory-grid');
     if (!members.length) {
@@ -1018,7 +1025,7 @@
     const facts = (m.facts || []).map(f => `<div class="fun-fact-item">${f}</div>`).join('');
     const initials = (m.name || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
     const photoEl = m.headshot
-      ? `<img class="card-headshot" src="${m.headshot}" alt="${m.name}" />`
+      ? `<img class="card-headshot" src="${faceCrop(m.headshot)}" alt="${m.name}" />`
       : `<div class="card-initials">${initials}</div>`;
     return `
       <div class="member-card" data-team="${team}" style="animation-delay:${idx * 0.04}s">
